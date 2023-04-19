@@ -1,0 +1,42 @@
+{%extends 'vis.html'%}
+{% block graphs %}
+    <div class="container mt-5">
+        <h1 class="text-center mb-5">Visualization Dashboard</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">Line Chart of Stock Prices</div>
+                    <div class="card-body">
+                        <canvas id="line-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">Bar Chart of Stock Volume</div>
+                    <div class="card-body">
+                        <canvas id="bar-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">Pie Chart of Daily Price Change</div>
+                    <div class="card-body">
+                        <canvas id="pie-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">Scatter Plot of High and Low Prices</div>
+                    <div class="card-body">
+                        <canvas id="scatter-plot"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

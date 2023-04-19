@@ -1,0 +1,322 @@
+{% extends 'vis.html' %}
+
+{% block content %}
+<div class="table-responsive content" style="max-height:550px; overflow-y: auto;" id="content-block">
+    <table class="table table-striped table-bordered table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>Date</th>
+                <th>Open Price</th>
+                <th>High Price</th>
+                <th>Low Price</th>
+                <th>Close Price</th>
+                <th>Volume</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in prices_df.itertuples %}
+            <tr>
+                <td>{{ row.date }}</td>
+                <td>{{ row.open_price }}</td>
+                <td>{{ row.high_price }}</td>
+                <td>{{ row.low_price }}</td>
+                <td>{{ row.close_price }}</td>
+                <td>{{ row.volume }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+{% endblock %}
+
+{% block graphs %}
+<div class="container mt-5" id="graphs-block">
+    <h1 class="text-center mb-5">Visualization Dashboard</h1>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">Line Chart of Stock Prices</div>
+                <div class="card-body">
+                    <canvas id="line-chart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">Bar Chart of Stock Volume</div>
+                <div class="card-body">
+                    <canvas id="bar-chart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">Pie Chart of Daily Price Change</div>
+                <div class="card-body">
+                    <canvas id="pie-chart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-header">Donut Chart of Stock Price Distribution</div>
+                <div class="card-body">
+                    <canvas id="donut-chart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8" style  = "width:100%">
+            <div class="card mb-8" >
+              <div class="card-header">Scatter Plot of High and Low Prices</div>
+              <div class="card-body">
+                <canvas id="scatter-plot"></canvas>
+              </div>
+            </div>
+          </div>          
+    </div>
+</div>
+
+{% endblock %}
+
+
+{%block javascript%}
+
+<script>
+    $(document).ready(function () {
+        $('#graphs-block').hide()
+
+        $('#data').click(function () {
+            $('#content-block').show();
+            $('#graphs-block').hide()
+        });
+
+        $('#visualization').click(function () {
+            $('#graphs-block').show();
+            $('#content-block').hide()
+        });
+
+
+
+    })
+</script>
+
+<script>
+    // Parse the JSON data from the view
+    var prices = JSON.parse('{{ prices_json|escapejs }}');
+
+    // Extract the date and close price data from the prices array
+    var dates = prices.map(function (price) { return price.date; });
+    var closePrices = prices.map(function (price) { return price.close_price; });
+
+    // Create a line chart using Chart.js
+    var ctx = document.getElementById('line-chart').getContext('2d');
+    var chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: 'Close Prices',
+                data: closePrices,
+                borderColor: 'blue',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                        unit: 'day',
+                        displayFormats: {
+                            day: 'MMM DD'
+                        }
+                    },
+                    ticks: {
+                        autoSkip: true,
+                        maxTicksLimit: 20
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+</script>
+
+<script>
+    // Get the prices data from the server
+    var pricesData = JSON.parse('{{ prices_json|escapejs }}');
+
+    // Extract the volume data from the prices data
+    var volumeData = pricesData.map(function (item) {
+        return item.volume;
+    });
+
+    // Create a bar chart
+    var ctx = document.getElementById('bar-chart').getContext('2d');
+    var chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: pricesData.map(function (item) {
+                return item.date;
+            }),
+            datasets: [{
+                label: 'Volume',
+                data: volumeData,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }]
+            }
+        }
+    });
+</script>
+
+<script>
+    var ctx = document.getElementById('pie-chart').getContext('2d');
+    var pricesJson = JSON.parse('{{ prices_json|escapejs }}');
+    var data = {
+        labels: ['Positive', 'Negative'],
+        datasets: [{
+            data: [pricesJson.filter(p => p.close_price > p.open_price).length, pricesJson.filter(p => p.close_price < p.open_price).length],
+            backgroundColor: ['#36a2eb', '#ff6384']
+        }]
+    };
+    var options = {
+        responsive: true,
+        maintainAspectRatio: false
+    };
+    var pieChart = new Chart(ctx, {
+        type: 'pie',
+        data: data,
+        options: options
+    });
+</script>
+
+<script>
+    // Get the prices JSON data from Django view
+    var prices = JSON.parse('{{ prices_json|escapejs }}');
+
+    // Extract the high and low prices
+    var highs = prices.map(function (price) { return price.high_price });
+    var lows = prices.map(function (price) { return price.low_price });
+
+    // Create the scatter plot using Chart.js
+    var ctx = document.getElementById('scatter-plot').getContext('2d');
+    var scatterChart = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'High and Low Prices',
+                data: highs.map(function (high, i) { return { x: high, y: lows[i] } }),
+                backgroundColor: 'rgba(54, 162, 235, 0.5)'
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    type: 'linear',
+                    position: 'bottom',
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'High Prices'
+                    },
+                    ticks: {
+                        beginAtZero: true,
+                        min: 0,
+                        max: 100,
+                        stepSize: 10
+                    }
+                }],
+                yAxes: [{
+                    type: 'linear',
+                    position: 'left',
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Low Prices'
+                    }
+                }]
+            }
+        }
+    });
+
+</script>
+
+<script>
+    // Get the prices JSON data from the server
+    var pricesJson = '{{ prices_json|escapejs }}';
+
+    // Parse the JSON data into an array of objects
+    var prices = JSON.parse(pricesJson);
+
+    // Calculate the price distribution
+    var distribution = {};
+    prices.forEach(function (price) {
+        var priceCategory = Math.round(price.close_price / 10) * 10;
+        if (!distribution[priceCategory]) {
+            distribution[priceCategory] = 1;
+        } else {
+            distribution[priceCategory] += 1;
+        }
+    });
+
+    // Convert the distribution object into an array of values
+    var distributionValues = [];
+    var distributionLabels = [];
+    Object.keys(distribution).forEach(function (priceCategory) {
+        distributionValues.push(distribution[priceCategory]);
+        distributionLabels.push(priceCategory + '-' + (parseInt(priceCategory) + 9));
+    });
+
+    // Get the canvas element for the donut chart
+    var canvas = document.getElementById('donut-chart');
+
+    // Create a new Chart object
+    var chart = new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+            labels: distributionLabels,
+            datasets: [{
+                data: distributionValues,
+                backgroundColor: [
+                    '#ffcd56',
+                    '#ff6384',
+                    '#36a2eb',
+                    '#fd6b19',
+                    '#2ecc71',
+                    '#e74c3c',
+                    '#3498db',
+                    '#9b59b6',
+                    '#95a5a6',
+                    '#f1c40f'
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+</script>
+
+
+
+{%endblock%}

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{% block title %}{% endblock %}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Link to Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-plugin-chart-candlestick@1.0.0/dist/chartjs-plugin-chart-candlestick.min.js"></script>
+
+
+    <!-- Link to your custom CSS file -->
+    {%load static%}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <style>
+        .sidebar {
+            position: fixed;
+            top: 0px;
+            bottom: 0;
+            left: 0;
+            height: calc(100vh - 0px);
+            width: 200px;
+            overflow-y: auto;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, .3);
+        }
+
+        .sidebar li {
+            display: block;
+            padding: 20px 20px 20px 0;
+            border-bottom: none;
+        }
+
+        .sidebar li:last-child {
+            border-bottom: none;
+        }
+
+        .sidebar li a {
+            color: #333;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .sidebar li a:hover {
+            color: #0f0;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+        }
+
+        .content {
+            margin-top: 50px;
+            margin-left: 200px;
+            padding-left: 20px;
+            padding-right: 20px;
+            max-height: calc(100vh - 70px);
+            /* Set the max-height to the viewport height minus the height of your fixed navbar */
+            overflow-y: auto;
+            /* Enable vertical scrolling when the content overflows */
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #333;
+            margin-top: 20px;
+        }
+
+        .table-responsive thead th {
+            position: sticky;
+            top: 0;
+            background-color: #fff;
+            z-index: 1;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            {%include "nav.html"%}
+        </div>
+        <div class="row">
+            <div class="col-md-2">
+                <ul class="list-group text-center justify-content-center sidebar">
+                    <li class="list-group-item"><a href="#" id="data">Data</a></li>
+                    <li class="list-group-item"><a href='#' id="visualization">Visualization</a></li>
+                </ul>
+            </div>
+
+            {%block content%}{%endblock%}
+            {%block graphs%}{%endblock%}
+
+
+        </div>
+    </div>
+
+    <!-- Link to Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <!-- Link to jQuery library -->
+
+    {%block javascript%}{%endblock%}
+
+
+
+</body>
+
+</html>
